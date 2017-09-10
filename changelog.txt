@@ -1,3 +1,7 @@
+[B]1.2.2[/B]
+- Cosmetics
+- Various tweaks in addon.xml
+
 [B]1.2.1[/B]
 - Fixed playback for youtube, web tv videos
 - Made youtube addon mandatory
