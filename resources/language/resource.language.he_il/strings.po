@@ -58,6 +58,10 @@ msgctxt "#32008"
 msgid "Episode"
 msgstr "פרק"
 
+msgctxt "#32009"
+msgid "Live"
+msgstr "חַי"
+
 msgctxt "#32500"
 msgid "Next..."
 msgstr "הבא..."

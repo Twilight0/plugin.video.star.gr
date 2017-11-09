@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.star.gr" version="1.2.2" name="STAR Player" provider-name="Twilight0">
+<addon id="plugin.video.star.gr" version="1.2.5" name="STAR Player" provider-name="Twilight0">
 	<requires>
 		<import addon="xbmc.python" version="2.24.0" />
 		<import addon="script.module.tulip" version="1.2.2" />
@@ -12,7 +12,7 @@
 		<summary lang="en_GB">STAR Player addon for Kodi</summary>
         <summary lang="en_GR">Πρόσθετο STAR Player για το Kodi</summary>
 		<description lang="en_GB">STAR live and on-demand broadcasts</description>
-		<description lang="el_GR">Ζωνταντές και on demand υπηρεσίες του STAR</description>
+		<description lang="el_GR">Ζωντανές και on demand υπηρεσίες του STAR</description>
 		<disclaimer lang="en_GB">This addon offers content available in Greece and is not published nor endorsed by star.gr</disclaimer>
 		<disclaimer lang="el_GR">Το πρόσθετο αυτό προσφέρει περιεχόμενο διαθέσιμο στην Ελλάδα και δεν έχει δημοσιευθεί ούτε εγκριθεί από το star.gr</disclaimer>
 		<license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
@@ -20,6 +20,16 @@
 		<website>http://www.star.gr/</website>
 		<size>238009</size>
 		<news>
+[B]1.2.5[/B]
+- Added Hebrew translation by Eng2Heb
+- Cosmetics
+
+[B]1.2.4[/B]
+- Cosmetics
+
+[B]1.2.3[/B]
+- Added Live stream
+
 [B]1.2.2[/B]
 - Cosmetics
 - Various tweaks in addon.xml
