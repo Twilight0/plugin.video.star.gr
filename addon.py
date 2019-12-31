@@ -16,15 +16,17 @@
 '''
 
 
-import urlparse,sys
+from sys import argv
 from resources.lib import star
+from tulip.compat import parse_qsl
 
-params = dict(urlparse.parse_qsl(sys.argv[2].replace('?','')))
+params = dict(parse_qsl(argv[2].replace('?', '')))
 
 action = params.get('action')
 url = params.get('url')
 image = params.get('image')
 title = params.get('title')
+query = params.get('query')
 
 
 if action is None:
@@ -41,38 +43,38 @@ elif action == 'deleteBookmark':
 elif action == 'bookmarks':
     star.Indexer().bookmarks()
 
-elif action == 'tvshows':
-    star.Indexer().tvshows()
+elif action == 'startv':
+    star.Indexer().startv()
 
-elif action == 'web_tv':
-    star.Indexer().web_tv()
+elif action == 'starx':
+    star.Indexer().starx()
 
-elif action == 'cartoon':
-    star.Indexer().cartoon()
+elif action == 'show':
+    star.Indexer().show(url)
+
+elif action == 'videos':
+    star.Indexer().videos()
+
+elif action == 'category':
+    star.Indexer().category(url)
+
+elif action == 'starx_videos':
+    star.Indexer().starx_videos(url, title)
+
+elif action == 'starx_shows':
+    star.Indexer().starx_shows()
 
 elif action == 'archive':
     star.Indexer().archive()
 
-elif action == 'episodes':
-    star.Indexer().episodes(url, image)
-
-elif action == 'web_episodes':
-    star.Indexer().web_episodes(url)
-
 elif action == 'youtube':
     star.Indexer().youtube(url)
 
-elif action == 'popular':
-    star.Indexer().popular()
-
-elif action == 'news':
-    star.Indexer().news()
+elif action == 'selector':
+    star.Indexer().selector(query=query)
 
 elif action == 'play':
-    star.Indexer().play(title, image, url)
-
-elif action == 'live':
-    star.Indexer().live()
+    star.Indexer().play(url, query)
 
 elif action == 'cache_clear':
     from tulip import cache

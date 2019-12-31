@@ -1,3 +1,7 @@
+[B]2.0.0[/B]
+- Complete addon rework
+- Changed artwork
+
 [B]1.2.5[/B]
 - Added Hebrew translation by Eng2Heb
 - Cosmetics

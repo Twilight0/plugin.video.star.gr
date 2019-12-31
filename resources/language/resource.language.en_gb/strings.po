@@ -16,7 +16,7 @@ msgid "Clear Function cache"
 msgstr ""
 
 msgctxt "#32001"
-msgid "Shows"
+msgid "Actions"
 msgstr ""
 
 msgctxt "#32002"
@@ -24,7 +24,7 @@ msgid "Archive"
 msgstr ""
 
 msgctxt "#32003"
-msgid "Starland"
+msgid "Watch at Star"
 msgstr ""
 
 msgctxt "#32004"
@@ -32,7 +32,7 @@ msgid "Latest"
 msgstr ""
 
 msgctxt "#32005"
-msgid "News"
+msgid "Option"
 msgstr ""
 
 msgctxt "#32006"
@@ -40,15 +40,47 @@ msgid "Bookmarks"
 msgstr ""
 
 msgctxt "#32007"
-msgid "Web TV"
+msgid "Videos"
 msgstr ""
 
 msgctxt "#32008"
-msgid "Episode"
+msgid "StarX"
 msgstr ""
 
 msgctxt "#32009"
 msgid "Live"
+msgstr ""
+
+msgctxt "#32010"
+msgid "News"
+msgstr ""
+
+msgctxt "#32011"
+msgid "Entertainment"
+msgstr ""
+
+msgctxt "#32012"
+msgid "Shows"
+msgstr ""
+
+msgctxt "#32013"
+msgid "Viral"
+msgstr ""
+
+msgctxt "#32014"
+msgid "Popular"
+msgstr ""
+
+msgctxt "#32015"
+msgid "Shows"
+msgstr ""
+
+msgctxt "#32016"
+msgid "Episode "
+msgstr ""
+
+msgctxt "#32017"
+msgid "Select an option"
 msgstr ""
 
 msgctxt "#32500"

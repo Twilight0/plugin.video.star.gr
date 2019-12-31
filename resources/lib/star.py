@@ -17,23 +17,37 @@
 
 import json, re
 
-from tulip import bookmarks, directory, client, cache, workers, youtube, control
-from urlparse import urljoin
+from youtube_resolver import resolve as yt_resolver
+from tulip import bookmarks, directory, client, cache, youtube, control
+from tulip.compat import urlparse, iteritems, OrderedDict
 
 
 class Indexer:
 
     def __init__(self):
-        self.list = []; self.data = []
-        self.base_link = 'http://www.star.gr/'
-        self.news_link = urljoin(self.base_link, '_layouts/handlers/tv/feeds.program.ashx?catTitle=News&artId=9')
-        self.news_image = urljoin(self.base_link, 'tv/PublishingImages/2015/04/080415181740_0653.jpg')
-        self.tvshows_link = urljoin(self.base_link, '_layouts/handlers/tv/feeds.program.ashx?catTitle=hosts')
-        self.episodes_link = urljoin(self.base_link, '_layouts/handlers/tv/feeds.program.ashx?catTitle=%s&artId=%s')
-        self.cartoon_link = urljoin(self.base_link, 'tv/el/Pages/StarlandIndex.aspx')
-        self.web_tv_link = urljoin(self.base_link, 'webtv/')
-        self.play_link = 'http://cdnapi.kaltura.com/p/21154092/sp/2115409200/playManifest/entryId/%s/flavorId/%s/format/url/protocol/http/a.mp4'
-        self.live_link = 'http://klive-a.akamaihd.net/dc-1/live/hls/p/713821/e/1_fp7fyi3j/sd/10000/t/ZA8fcNZ-c0boV5jwPLnSfg/index-s32.m3u8'
+
+        self.list = []; self.data = []; self.groups = []
+        self.stargr_link = 'http://www.star.gr'
+        self.starx_link = 'https://www.starx.gr'
+        self.startv_link = ''.join([self.stargr_link, '/tv/'])
+        self.star_video_link = ''.join([self.stargr_link, '/video'])
+        self.starx_latest_link = ''.join([self.starx_link, '/latest'])
+        self.starx_viral_link = ''.join([self.starx_link, '/viral'])
+        self.starx_popular_link = ''.join([self.starx_link, '/popular'])
+        self.starx_shows_link = ''.join([self.starx_link, '/shows'])
+        self.ajax_player = ''.join([self.startv_link, 'ajax/Atcom.Sites.StarTV.Components.Show.PopupSliderItems'])
+        self.player_query = '&'.join(
+            [
+                'showid={show_id}', 'type=Episode', 'itemIndex=0', 'seasonid={season_id}', 'single=false'
+            ]
+        )
+        self.trailer_query = '&'.join(
+            [
+                'showid={show_id}', 'type=Trailer', 'itemIndex=0', 'single=false'
+            ]
+        )
+        self.m3u8_link = 'https://cdnapisec.kaltura.com/p/713821/sp/0/playManifest/entryId/{0}/format/applehttp/protocol/https/flavorParamId/0/manifest.m3u8'
+        self.live_link = self.m3u8_link.format('1_fp7fyi3j')
         self.youtube_key = 'AIzaSyBOS4uSyd27OU0XV2KSdN3vT2UG_v0g9sI'
         self.youtube_link = 'UCwUNbp_4Y2Ry-asyerw2jew'
 
@@ -42,45 +56,34 @@ class Indexer:
         self.list = [
             {
                 'title': 32009,
-                'action': 'live',
+                'action': 'play',
                 'isFolder': 'False',
+                'url': self.live_link,
                 'icon': 'live.png'
             }
             ,
             {
-                'title': 32001,
-                'action': 'tvshows',
+                'title': 32003,
+                'action': 'startv',
                 'icon': 'tvshows.png'
             }
             ,
             {
                 'title': 32007,
-                'action': 'web_tv',
-                'icon': 'www.png'
+                'action': 'videos',
+                'icon': 'videos.png'
+            }
+            ,
+            {
+                'title': 32008,
+                'action': 'starx',
+                'icon': 'starx.png'
             }
             ,
             {
                 'title': 32002,
                 'action': 'archive',
                 'icon': 'archive.png'
-            }
-            ,
-            {
-                'title': 32003,
-                'action': 'cartoon',
-                'icon': 'cartoon.png'
-            }
-            ,
-            {
-                'title': 32004,
-                'action': 'popular',
-                'icon': 'popular.png'
-            }
-            ,
-            {
-                'title': 32005,
-                'action': 'news',
-                'icon': 'news.png'
             }
             ,
             {
@@ -101,62 +104,16 @@ class Indexer:
         self.list = bookmarks.get()
 
         if self.list is None:
+            self.list = [{'title': 'N/A', 'action': None}]
+            directory.add(self.list)
             return
 
         for i in self.list:
-            bookmark = dict((k, v) for k, v in i.iteritems() if not k == 'next')
+            bookmark = dict((k, v) for k, v in iteritems(i) if not k == 'next')
             bookmark['delbookmark'] = i['url']
             i.update({'cm': [{'title': 32502, 'query': {'action': 'deleteBookmark', 'url': json.dumps(bookmark)}}]})
 
         self.list = sorted(self.list, key=lambda k: k['title'].lower())
-
-        directory.add(self.list)
-
-    def tvshows(self):
-
-        self.list = cache.get(self._tv_shows, 24, self.tvshows_link)
-
-        if self.list is None:
-            return
-
-        for i in self.list: i.update({'action': 'episodes'})
-
-        for i in self.list:
-            bookmark = dict((k, v) for k, v in i.iteritems() if not k == 'next')
-            bookmark['bookmark'] = i['url']
-            i.update({'cm': [{'title': 32501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
-
-        self.list = sorted(self.list, key=lambda k: k['title'].lower())
-
-        directory.add(self.list)
-
-    def cartoon(self):
-
-        self.list = cache.get(self._cartoons, 24, self.cartoon_link)
-
-        if self.list is None:
-            return
-
-        for i in self.list: i.update({'action': 'episodes'})
-
-        for i in self.list:
-            bookmark = dict((k, v) for k, v in i.iteritems() if not k == 'next')
-            bookmark['bookmark'] = i['url']
-            i.update({'cm': [{'title': 32501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
-
-        self.list = sorted(self.list, key=lambda k: k['title'].lower())
-
-        directory.add(self.list)
-
-    def episodes(self, url, image):
-
-        self.list = cache.get(self._episodes, 1, url, image)
-
-        if self.list is None:
-            return
-
-        for i in self.list:
-            i.update({'action': 'play', 'isFolder': 'False'})
 
         directory.add(self.list)
 
@@ -169,13 +126,11 @@ class Indexer:
 
         for i in self.list:
             i.update({'action': 'youtube'})
-
-        for i in self.list:
-            bookmark = dict((k, v) for k, v in i.iteritems() if not k == 'next')
+            bookmark = dict((k, v) for k, v in iteritems(i) if not k == 'next')
             bookmark['bookmark'] = i['url']
             i.update({'cm': [{'title': 32501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
 
-        self.list = sorted(self.list, key=lambda k: k['title'].lower())
+        control.sortmethods('title')
 
         directory.add(self.list)
 
@@ -186,270 +141,453 @@ class Indexer:
         if self.list is None:
             return
 
-        self.list = [i for i in self.list if int(i['duration']) > 120]
-
         for i in self.list: i.update({'action': 'play', 'isFolder': 'False'})
 
         directory.add(self.list)
 
-    def popular(self):
+    def index(self):
 
-        self.list = cache.get(youtube.youtube(key=self.youtube_key).videos, 1, self.youtube_link)
+        html = client.request(self.startv_link)
+
+        divs = client.parseDOM(html, 'div', {'class': 'wrapper'})[3:6]
+
+        htmls = '\n'.join(divs)
+
+        items = client.parseDOM(htmls, 'div', attrs={'class': 'tileRow'})
+
+        for item in items:
+
+            title = client.parseDOM(item, 'b')[0]
+            title = client.replaceHTMLCodes(title)
+            url = client.parseDOM(item, 'a', attrs={'class': 'tile_title'}, ret='href')[0]
+            try:
+                image = client.parseDOM(item, 'div', attrs={'data-tile-img': 'background-image:.+'}, ret='style')[0]
+            except IndexError:
+                image = client.parseDOM(item, 'div', attrs={'data-tile-img': 'background-image:.+'}, ret='data-grid-img')[0]
+            image = re.search(r'(http.+?\.jpg)', image).group(1)
+            group = urlparse(url).path.split('/')[2]
+
+            self.list.append({'title': title, 'image': image, 'url': url, 'group': group})
+
+        return self.list
+
+    def listing(self, url):
+
+        html = client.request(url)
+
+        content = client.parseDOM(html, 'div', attrs={'class': 'seasons'})[0]
+
+        items = client.parseDOM(content, 'li', attrs={'class': 'horizontal-cell.+?'})
+
+        for i in items:
+
+            try:
+                title = client.replaceHTMLCodes(client.parseDOM(i, 'a', ret='data-title')[0])
+            except Exception:
+                break
+            try:
+                image = client.parseDOM(i, 'img', ret='src')[0]
+            except IndexError:
+                image = client.parseDOM(i, 'img', ret='data-src')[0]
+
+            show_id = client.parseDOM(i, 'a', ret='data-showid')[0]
+            season_id = client.parseDOM(i, 'a', ret='data-seasonid')[0]
+            url = '?'.join([self.ajax_player, self.player_query.format(show_id=show_id, season_id=season_id)])
+            sep = client.parseDOM(i, 'a', ret='href')[0]
+            group = client.stripTags(client.parseDOM(html.partition(sep.encode('utf-8'))[0], 'h3')[-1])
+
+            self.data.append(group)
+            self.list.append({'title': title, 'image': image, 'url': url, 'group': group})
+
+        self.groups = list(OrderedDict.fromkeys(self.data))
+
+        return self.list, self.groups
+
+    def show(self, url):
+
+        self.list, self.groups = cache.get(self.listing, 1, url)
 
         if self.list is None:
             return
 
-        self.list = [i for i in self.list if int(i['duration']) > 120]
+        try:
+            self.list = [i for i in self.list if i['group'] == self.groups[int(control.setting('group'))]]
+        except IndexError:
+            control.setSetting('group', '0')
 
         for i in self.list:
             i.update({'action': 'play', 'isFolder': 'False'})
 
+        try:
+            title = u''.join([control.lang(32005), u': {0}'.format(self.groups[int(control.setting('group'))])])
+        except IndexError:
+            try:
+                title = u''.join([control.lang(32005), u': {0}'.format(self.groups[0])])
+            except Exception:
+                return
+
+        selector = {
+            'title': title,
+            'action': 'selector',
+            'icon': 'selector.png',
+            'isFolder': 'False',
+            'isPlayable': 'False',
+            'query': json.dumps(self.groups)
+        }
+
+        self.list.insert(0, selector)
+
         directory.add(self.list)
 
-    def web_tv(self):
+    def startv(self):
 
-        self.list = cache.get(self._webtv, 24)
+        self.list = cache.get(self.index, 12)
 
         if self.list is None:
             return
 
         for i in self.list:
-            i.update({'action': 'web_episodes'})
-
-        for i in self.list:
-            bookmark = dict((k, v) for k, v in i.iteritems() if not k == 'next')
+            i.update({'action': 'show'})
+            bookmark = dict((k, v) for k, v in iteritems(i) if not k == 'next')
             bookmark['bookmark'] = i['url']
             i.update({'cm': [{'title': 32501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
 
-        self.list = sorted(self.list, key=lambda k: k['title'].lower())
+        option = control.setting('option')
+
+        selector = {
+            'title': u''.join([control.lang(32005), u': {0}'.format(control.lang(self.vod_groups()[option]))]),
+            'action': 'selector',
+            'icon': 'selector.png',
+            'isFolder': 'False',
+            'isPlayable': 'False'
+        }
+
+        self.list = [i for i in self.list if i['group'] == option]
+
+        self.list.insert(0, selector)
 
         directory.add(self.list)
 
-    def web_episodes(self, url):
+    def _videos(self):
 
-        self.list = cache.get(self._webepisodes, 24, url)
+        html = client.request(self.star_video_link)
+
+        items = client.parseDOM(html, 'div', attrs={'class': 'video__title'})
+
+        for i in items:
+
+            title = client.parseDOM(i, 'a', attrs={'style': 'color.+?'})[0]
+            url = client.parseDOM(i, 'a', attrs={'style': 'color.+?'}, ret='href')[0]
+
+            self.list.append({'title': title, 'url': url})
+
+        return self.list
+
+    def videos(self):
+
+        self.list = cache.get(self._videos, 12)
 
         if self.list is None:
             return
 
         for i in self.list:
+            i.update({'action': 'category'})
+            bookmark = dict((k, v) for k, v in iteritems(i) if not k == 'next')
+            bookmark['bookmark'] = i['url']
+            i.update({'cm': [{'title': 32501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
+
+        directory.add(self.list)
+
+    def _category(self, url):
+
+        html = client.request(url)
+
+        content = client.parseDOM(html, 'div', attrs={'class': 'block block--no-space'})[0]
+
+        items = client.parseDOM(content, 'div', attrs={'style': 'margin-bottom:20px;'})
+
+        try:
+            next_url = client.parseDOM(html, 'a', {'rel': 'next'}, ret='href')[0]
+        except Exception:
+            next_url = ''
+
+        for i in items:
+
+            title = client.parseDOM(i, 'div', attrs={'class': 'title'})[0].strip()
+            title = client.replaceHTMLCodes(title)
+            url = client.parseDOM(i, 'a', ret='href')[0]
+            url = ''.join([self.stargr_link, url])
+            image = client.parseDOM(i, 'img', ret='src')[0]
+
+            self.list.append({'title': title, 'image': image, 'url': url, 'next': next_url})
+
+        return self.list
+
+    def category(self, url):
+
+        self.list = cache.get(self._category, 1, url)
+
+        if self.list is None:
+            return
+
+        for i in self.list:
+            i.update({'action': 'play', 'isFolder': 'False', 'nextlabel': 32500, 'nextaction': 'category'})
+
+        directory.add(self.list)
+
+    def starx(self):
+
+        self.list = [
+            {
+                'title': u''.join([control.lang(32008), ': ', control.lang(32004)]),
+                'url': self.starx_latest_link,
+                'icon': 'starx.png',
+                'action': 'starx_videos'
+            }
+            ,
+            {
+                'title': u''.join([control.lang(32008), ': ', control.lang(32013)]),
+                'url': self.starx_viral_link,
+                'icon': 'starx.png',
+                'action': 'starx_videos'
+            }
+            ,
+            {
+                'title': u''.join([control.lang(32008), ': ', control.lang(32014)]),
+                'url': self.starx_popular_link,
+                'icon': 'starx.png',
+                'action': 'starx_videos'
+            }
+            ,
+            {
+                'title': u''.join([control.lang(32008), ': ', control.lang(32012)]),
+                'icon': 'starx.png',
+                'action': 'starx_shows'
+            }
+        ]
+
+        directory.add(self.list)
+
+    def _starx_videos(self, url, title):
+
+        try:
+            title = title.decode('utf-8')
+        except Exception:
+            pass
+
+        html = client.request(url)
+
+        if 'javascript:void(0)' in html and 'rel="more"' in html:
+
+            items = json.loads(re.search('var episodes = (.+?);', html).group(1))
+
+            episodes = list(range(1, len(items) + 1))[::-1]
+
+            for i, e in zip(items, episodes):
+
+                try:
+                    label = u''.join([title, ' - ', control.lang(32016), str(e), '[CR][I]', i['title'], '[/I]'])
+                except Exception:
+                    label = u''.join([title, ' - ', control.lang(32016), str(e)])
+                image = self.thumb_maker(i['video_id'])
+                url = i['video_id']
+
+                data = {'title': label, 'url': url, 'image': image}
+
+                if i['kaltura_id']:
+                    data.update({'query': i['kaltura_id']})
+
+                self.list.append(data)
+
+        else:
+
+            items = client.parseDOM(html, 'div', attrs={'class': 'video-.+?'})
+
+            try:
+                next_url = client.parseDOM(html, 'a', attrs={'rel': 'next'}, ret='href')[0]
+            except Exception:
+                next_url = ''
+
+            for i in items:
+
+                title = client.parseDOM(i, 'span', attrs={'class': 'name'})[0]
+                title = client.replaceHTMLCodes(title)
+                url = html.partition(i.encode('utf-8'))[0]
+                url = client.parseDOM(url, 'a', ret='href')[-1]
+                image = client.parseDOM(i, 'img', attrs={'class': 'lozad'}, ret='src')[0]
+                if image == 'https://www.starx.gr/images/1x1.png':
+                    image = client.parseDOM(i, 'img', attrs={'class': 'lozad'}, ret='data-src')[0]
+
+                self.list.append({'title': title, 'url': url, 'image': image, 'next': next_url})
+
+        return self.list
+
+    def starx_videos(self, url, title):
+
+        self.list = cache.get(self._starx_videos, 1, url, title)
+
+        if self.list is None:
+            return
+
+        for i in self.list:
+
             i.update({'action': 'play', 'isFolder': 'False'})
 
-        directory.add(self.list, content='episodes')
+            if 'next' in i:
+                i.update({'nextlabel': 32500, 'nextaction': 'starx_videos'})
 
-    def news(self):
+        directory.add(self.list)
 
-        self.episodes(self.news_link, self.news_image)
+    def _starx_shows(self):
 
-    def play(self, title, image, url):
+        html = client.request(self.starx_shows_link)
+
+        items = client.parseDOM(html, 'div', attrs={'class': 'video-.+?'})
+
+        for i in items:
+
+            title = client.parseDOM(i, 'span', attrs={'class': 'name'})[0]
+            url = html.partition(i.encode('utf-8'))[0]
+            url = client.parseDOM(url, 'a', ret='href')[-1]
+            image = client.parseDOM(i, 'img', ret='data-src')[0]
+
+            self.list.append({'title': title, 'url': url, 'image': image})
+
+        return self.list
+
+    def starx_shows(self):
+
+        self.list = cache.get(self._starx_shows, 12)
+
+        if self.list is None:
+            return
+
+        for i in self.list:
+            i.update({'action': 'starx_videos'})
+            bookmark = dict((k, v) for k, v in iteritems(i) if not k == 'next')
+            bookmark['bookmark'] = i['url']
+            i.update({'cm': [{'title': 32501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
+
+        directory.add(self.list)
+
+    def play(self, url, query=None):
 
         if len(url) == 11:
 
-            from youtube_resolver import resolve as yt_resolve
-            link = yt_resolve(url)
-            stream = link[1]['url']
-            directory.resolve(stream, meta={'title': title}, icon=image)
+            try:
+                stream = self.yt_session(url)
+                directory.resolve(stream, dash=stream.endswith('.mpd'))
+                return
+            except Exception:
+                return self.play(query)
+
+        elif len(url) == 10:
+
+            url = self.m3u8_link.format(url)
+
+        elif url.startswith('plugin://'):
+
+            return self.play(url[-11:])
+
+        elif 'Atcom.Sites' in url or '/video/' in url:
+
+            html = client.request(url)
+
+            try:
+
+                url = re.search(r'url: ["\'](.+?)["\']', html).group(1)
+
+            except AttributeError:
+
+                url = self.m3u8_link.format(re.search(r'kaltura-player(\w+)', html).group(1))
+
+        elif '/episode/' in url:
+
+            html = client.request(url)
+
+            url = self.m3u8_link.format(re.search(r'kalturaPlayer\(["\'](\w+)["\']', html).group(1))
+
+        elif '/viral/' in url or '/popular/' in url:
+
+            html = client.request(url)
+
+            yt_id = re.search(r'onYouTubeIframeAPIReady\(["\']([\w-]{11})["\']\);', html).group(1)
+
+            return self.play(yt_id)
+
+        try:
+
+            addon_enabled = control.addon_details('inputstream.adaptive').get('enabled')
+
+        except KeyError:
+
+            addon_enabled = False
+
+        version = int(control.infoLabel('System.AddonVersion({0})'.format('xbmc.python')).replace('.', ''))
+
+        dash = addon_enabled and version >= 2260
+
+        if dash:
+
+            directory.resolve(url, dash=True, manifest_type='hls', mimetype='application/vnd.apple.mpegurl')
 
         else:
 
             directory.resolve(url)
 
-    def live(self):
+    @staticmethod
+    def thumb_maker(video_id):
 
-        directory.resolve(self.live_link, meta={'title': 'STAR HD'}, icon=control.addonInfo('icon'))
+        return 'http://img.youtube.com/vi/{0}/{1}.jpg'.format(video_id, 'mqdefault')
 
-    def _webtv(self):
+    @staticmethod
+    def yt_session(yt_id):
 
-        html = client.request(urljoin(self.web_tv_link, 'index.php'))
-
-        divclass = client.parseDOM(html, 'div', attrs={'class': 'category-posts-grid-row large-post-row clearfix'})
-
-        bare_links = client.parseDOM(divclass, 'a', ret='href')
-        links = [urljoin(self.web_tv_link, i) for i in bare_links]
-
-        result = client.parseDOM(divclass, 'a')
-
-        items = zip(result, links)
-
-        for item, url in items:
-
-            title = client.parseDOM(item, 'h2')[0]
-            image = client.parseDOM(item, 'img', ret='src')[0]
-            image = urljoin('http://www.star.gr/webtv/', image)
-
-            data = dict(title=title, image=image, url=url)
-
-            self.list.append(data)
-
-        return self.list
-
-    def _tv_shows(self, url):
+        streams = yt_resolver(yt_id)
 
         try:
-            result = client.request(url, mobile=True)
-            result = json.loads(result)
-            items = result['hosts']
-        except:
-            return
+            addon_enabled = control.addon_details('inputstream.adaptive').get('enabled')
+        except KeyError:
+            addon_enabled = False
 
-        for item in items:
+        if not addon_enabled:
+            streams = [s for s in streams if 'mpd' not in s['title'].lower()]
 
-            try:
+        stream = streams[0]['url']
 
-                title = item['Title'].strip()
-                title = client.replaceHTMLCodes(title)
-                title = title.encode('utf-8')
+        return stream
 
-                id = item['ProgramId']
-                cat = item['ProgramCat'].strip()
-                url = self.episodes_link % (cat, id)
-                url = client.replaceHTMLCodes(url)
-                url = url.encode('utf-8')
+    @staticmethod
+    def vod_groups():
 
-                image = item['Image'].strip()
-                image = urljoin(self.base_link, image)
-                image = client.replaceHTMLCodes(image)
-                image = image.encode('utf-8')
+        return OrderedDict(
+            [
+                ('enimerosi', 32010), ('psychagogia', 32011), ('seires', 32012)
+            ]
+        )
 
-                self.list.append({'title': title, 'url': url, 'image': image})
+    def selector(self, query=None):
 
-            except:
-                pass
+        if query:
 
-        return self.list
+            query = json.loads(query)
 
-    def _episodes(self, url, image):
+            choice = control.selectDialog(query, control.lang(32017))
 
-        try:
+            control.setSetting('group', str(choice))
 
-            result = client.request(url, mobile=True)
-            result = json.loads(result)
-            items = result['videosprogram']
+        else:
 
-        except:
-            return
+            choices = [control.lang(i) for i in list(self.vod_groups().values())]
 
-        for item in items:
+            groups = list(self.vod_groups().keys())
 
-            try:
-                title = item['Title'].strip()
-                title = client.replaceHTMLCodes(title)
-                title = title.encode('utf-8')
+            choice = control.selectDialog(choices, control.lang(32003))
 
-                url = item['VideoID'].strip()
-                url = self.play_link % (url, url)
-                url = client.replaceHTMLCodes(url)
-                url = url.encode('utf-8')
+            option = groups[choice]
 
-                self.list.append({'title': title, 'url': url, 'image': image})
+            control.setSetting('option', option)
 
-            except:
-                pass
-
-        return self.list
-
-    def _webepisodes(self, url):
-
-        html = client.request(url)
-
-        table = client.parseDOM(html, 'table', attrs={'class': 'table-fill'})[0]
-
-        info = re.findall('text-left\">(.+?)<', table, re.U | re.S)
-        self.data = [i.strip() for i in info]
-        show = self.data[0]
-        name = self.data[1]
-        presentation = self.data[2]
-        people = self.data[3]
-        description = self.data[4]
-        plot = self.data[5]
-
-        episodes = client.parseDOM(html, 'a', attrs={'id': 'show_video_id'})
-
-        for count, episode in list(enumerate(episodes[::-1], start=1)):
-
-            datestr = client.parseDOM(episode, 'time')[0].partition('</span>')[2]
-            date = datestr.split('/')[::-1]
-            fixed = []
-            for i in date:
-                if len(i) == 1:
-                    fixed.append('0' + i)
-                else:
-                    fixed.append(i)
-            aired = '-'.join(fixed)
-            title = name + ' - ' + control.lang(32008) + ' - ' + datestr
-            link = client.parseDOM(episode, 'article', ret='onclick')[0]
-            link = re.findall("'(.+?)'", link)[0]
-            # link = urljoin('http://https://www.youtube.com/embed/', link)
-            image = client.parseDOM(episode, 'img', ret='src')[0]
-
-            data = dict(
-                title=title, image=image, url=link, aired=aired, genre=show, year=date[0], episode=count,
-                plot=presentation + ': ' + people + '\n' + description + ': ' + plot
-            )
-
-            self.list.append(data)
-
-        return self.list
-
-    def _cartoons(self, url):
-
-        try:
-            result = client.request(url)
-
-            result = client.parseDOM(result, 'a', ret='href')
-            result = [i for i in result if 'starland' in i.lower()]
-            result = [re.findall('artId=(\d*)', i) for i in result]
-            result = [i[0] for i in result if len(i) > 0]
-            result = [x for y, x in enumerate(result) if x not in result[:y]]
-            result = [self.episodes_link % ('Starland', i) for i in result]
-
-            threads = []
-            for i in range(0, len(result)):
-                threads.append(workers.Thread(self.thread, result[i], i))
-                self.data.append('')
-            [i.start() for i in threads]
-            [i.join() for i in threads]
-
-            items = self.data
-
-        except:
-            return
-
-        for item in items:
-
-            try:
-
-                item = json.loads(item)
-
-                # videos = item['videosprogram'][0]['VideoID']
-
-                title = item['programme']['Title'].strip()
-                title = client.replaceHTMLCodes(title)
-                title = title.encode('utf-8')
-
-                id = item['programme']['ProgramId']
-                cat = item['programme']['ProgramCat'].strip()
-                url = self.episodes_link % (cat, id)
-                url = client.replaceHTMLCodes(url)
-                url = url.encode('utf-8')
-
-                image = item['programme']['Image'].strip()
-                image = urljoin(self.base_link, image)
-                image = client.replaceHTMLCodes(image)
-                image = image.encode('utf-8')
-
-                self.list.append({'title': title, 'url': url, 'image': image})
-
-            except:
-
-                pass
-
-        return self.list
-
-    def thread(self, url, i):
-
-        try:
-            result = client.request(url)
-            self.data[i] = result
-        except:
-            return
+        if choice != -1:
+            control.sleep(200)
+            control.refresh()
