@@ -55,7 +55,7 @@ class Indexer:
 
         self.list = [
             {
-                'title': 32009,
+                'title': control.lang(32009),
                 'action': 'play',
                 'isFolder': 'False',
                 'url': self.live_link,
@@ -63,31 +63,31 @@ class Indexer:
             }
             ,
             {
-                'title': 32003,
+                'title': control.lang(32003),
                 'action': 'startv',
                 'icon': 'tvshows.png'
             }
             ,
             {
-                'title': 32007,
+                'title': control.lang(32007),
                 'action': 'videos',
                 'icon': 'videos.png'
             }
             ,
             {
-                'title': 32008,
+                'title': control.lang(32008),
                 'action': 'starx',
                 'icon': 'starx.png'
             }
             ,
             {
-                'title': 32002,
+                'title': control.lang(32002),
                 'action': 'archive',
                 'icon': 'archive.png'
             }
             ,
             {
-                'title': 32006,
+                'title': control.lang(32006),
                 'action': 'bookmarks',
                 'icon': 'bookmarks.png'
             }
@@ -473,6 +473,9 @@ class Indexer:
 
     def play(self, url, query=None):
 
+        if url == self.live_link or url == 'wkFF9llFqRs':
+            meta = {'title': 'Star TV'}
+
         if len(url) == 11:
 
             try:
@@ -516,6 +519,10 @@ class Indexer:
 
             return self.play(yt_id)
 
+        elif url == self.live_link and int(client.request(url, output='response', error=True)[0]) == 404:
+
+            return self.play('wkFF9llFqRs')
+
         try:
 
             addon_enabled = control.addon_details('inputstream.adaptive').get('enabled')
@@ -530,11 +537,11 @@ class Indexer:
 
         if dash:
 
-            directory.resolve(url, dash=True, manifest_type='hls', mimetype='application/vnd.apple.mpegurl')
+            directory.resolve(url, meta=meta, dash=True, manifest_type='hls', mimetype='application/vnd.apple.mpegurl')
 
         else:
 
-            directory.resolve(url)
+            directory.resolve(url, meta=meta)
 
     @staticmethod
     def thumb_maker(video_id):
