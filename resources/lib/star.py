@@ -316,7 +316,8 @@ class Indexer:
             title = client.parseDOM(i, 'div', attrs={'class': 'title'})[0].strip()
             title = client.replaceHTMLCodes(title)
             url = client.parseDOM(i, 'a', ret='href')[0]
-            url = ''.join([self.stargr_link, url])
+            if not url.startswith('http'):
+                url = ''.join([self.stargr_link, url])
             image = client.parseDOM(i, 'img', ret='src')[0]
 
             self.list.append({'title': title, 'image': image, 'url': url, 'next': next_url})
@@ -574,7 +575,8 @@ class Indexer:
 
             choice = control.selectDialog(query, control.lang(32017))
 
-            control.setSetting('group', str(choice))
+            if choice != -1:
+                control.setSetting('group', str(choice))
 
         else:
 
@@ -586,7 +588,8 @@ class Indexer:
 
             option = groups[choice]
 
-            control.setSetting('option', option)
+            if choice != -1:
+                control.setSetting('option', option)
 
         if choice != -1:
             control.sleep(200)
