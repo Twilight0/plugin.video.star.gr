@@ -1,16 +1,18 @@
 
-STAR Player addon for Kodi
-======================
+# STAR Player addon for Kodi
 
-About
------
-STAR live and on-demand broadcasts
+## About
 
-Kodi Addon for http://www.star.gr
+STAR Live and on-demand broadcasts
+
+Kodi Addon for https://www.star.gr
 
 This addon is not published nor endorsed by star.gr
 
 This addon offers content available in Greece
+
+Icons sourced from flaticon.com ([Licence](https://file000.flaticon.com/downloads/license/license.pdf "Licence"))
+Main artwork from https://www.star.gr
 
 License
 -------

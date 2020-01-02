@@ -81,6 +81,12 @@ class Indexer:
             }
             ,
             {
+                'title': control.lang(32010),
+                'action': 'news',
+                'icon': 'news.png'
+            }
+            ,
+            {
                 'title': control.lang(32002),
                 'action': 'archive',
                 'icon': 'archive.png'
@@ -194,7 +200,9 @@ class Indexer:
             season_id = client.parseDOM(i, 'a', ret='data-seasonid')[0]
             url = '?'.join([self.ajax_player, self.player_query.format(show_id=show_id, season_id=season_id)])
             sep = client.parseDOM(i, 'a', ret='href')[0]
-            group = client.stripTags(client.parseDOM(html.partition(sep.encode('utf-8'))[0], 'h3')[-1])
+            group = client.replaceHTMLCodes(
+                client.stripTags(client.parseDOM(html.partition(sep.encode('utf-8'))[0], 'h3')[-1])
+            )
 
             self.data.append(group)
             self.list.append({'title': title, 'image': image, 'url': url, 'group': group})
@@ -369,6 +377,47 @@ class Indexer:
 
         directory.add(self.list)
 
+    def news(self):
+
+        self.list = [
+            {
+                'title': 32018,
+                'action': 'show',
+                'icon': 'news.png',
+                'url': 'https://www.star.gr/tv/enimerosi/mesimeriano-deltio-eidiseon/'
+            }
+            ,
+            {
+                'title': 32019,
+                'action': 'show',
+                'icon': 'news.png',
+                'url': 'https://www.star.gr/tv/enimerosi/kedriko-deltio-eidiseon/'
+            }
+            ,
+            {
+                'title': 32022,
+                'action': 'show',
+                'icon': 'news.png',
+                'url': 'https://www.star.gr/tv/enimerosi/kentriko-deltio-eidiseon-sabbatokuriakou/'
+            }
+            ,
+            {
+                'title': 32020,
+                'action': 'show',
+                'icon': 'sign.png',
+                'url': 'https://www.star.gr/tv/enimerosi/apogeumatino-deltio-eidiseon/'
+            }
+            ,
+            {
+                'title': 32021,
+                'action': 'show',
+                'icon': 'weather.png',
+                'url': 'https://www.star.gr/tv/enimerosi/star-kairos/'
+            }
+        ]
+
+        directory.add(self.list)
+
     def _starx_videos(self, url, title):
 
         try:
@@ -475,6 +524,10 @@ class Indexer:
 
         if url == self.live_link or url == 'wkFF9llFqRs':
             meta = {'title': 'Star TV'}
+            icon = control.icon()
+        else:
+            meta = None
+            icon = None
 
         if len(url) == 11:
 
@@ -537,11 +590,13 @@ class Indexer:
 
         if dash:
 
-            directory.resolve(url, meta=meta, dash=True, manifest_type='hls', mimetype='application/vnd.apple.mpegurl')
+            directory.resolve(
+                url, meta=meta, icon=icon, dash=True, manifest_type='hls', mimetype='application/vnd.apple.mpegurl'
+            )
 
         else:
 
-            directory.resolve(url, meta=meta)
+            directory.resolve(url, meta=meta, icon=icon)
 
     @staticmethod
     def thumb_maker(video_id):

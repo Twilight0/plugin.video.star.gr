@@ -46,6 +46,9 @@ elif action == 'bookmarks':
 elif action == 'startv':
     star.Indexer().startv()
 
+elif action == 'news':
+    star.Indexer().news()
+
 elif action == 'starx':
     star.Indexer().starx()
 

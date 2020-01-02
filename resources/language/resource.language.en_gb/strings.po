@@ -83,6 +83,26 @@ msgctxt "#32017"
 msgid "Select an option"
 msgstr ""
 
+msgctxt "#32018"
+msgid "News at noon"
+msgstr ""
+
+msgctxt "#32019"
+msgid "Evening news"
+msgstr ""
+
+msgctxt "#32020"
+msgid "Sign language news"
+msgstr ""
+
+msgctxt "#32021"
+msgid "Weather"
+msgstr ""
+
+msgctxt "#32022"
+msgid "Weekend news"
+msgstr ""
+
 msgctxt "#32500"
 msgid "Next..."
 msgstr ""

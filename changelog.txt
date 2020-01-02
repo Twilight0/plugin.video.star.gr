@@ -1,3 +1,7 @@
+[B]2.1.0[/B]
+- Added news item
+- Minor other tweaks
+
 [B]2.0.X[/B]
 - Complete addon rework
 - Changed artwork

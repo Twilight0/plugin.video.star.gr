@@ -84,6 +84,26 @@ msgctxt "#32017"
 msgid "Select an option"
 msgstr "Κάντε μία επιλογή"
 
+msgctxt "#32018"
+msgid "News at noon"
+msgstr "Μεσημεριανό δελτίο"
+
+msgctxt "#32019"
+msgid "Evening news"
+msgstr "Βραδινό δελτίο"
+
+msgctxt "#32020"
+msgid "Sign language news"
+msgstr "Δελτίο στη νοηματική"
+
+msgctxt "#32021"
+msgid "Weather"
+msgstr "Καιρός"
+
+msgctxt "#32022"
+msgid "Weekend news"
+msgstr "Νέα του Σαββατοκύριακου"
+
 msgctxt "#32500"
 msgid "Next..."
 msgstr "Επόμενα..."
