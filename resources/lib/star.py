@@ -38,12 +38,7 @@ class Indexer:
         self.ajax_player = ''.join([self.startv_link, 'ajax/Atcom.Sites.StarTV.Components.Show.PopupSliderItems'])
         self.player_query = '&'.join(
             [
-                'showid={show_id}', 'type=Episode', 'itemIndex=0', 'seasonid={season_id}', 'single=false'
-            ]
-        )
-        self.trailer_query = '&'.join(
-            [
-                'showid={show_id}', 'type=Trailer', 'itemIndex=0', 'single=false'
+                'showid={show_id}', 'type=Episode', 'itemIndex={item_index}', 'seasonid={season_id}', 'single=false'
             ]
         )
         self.m3u8_link = 'https://cdnapisec.kaltura.com/p/713821/sp/0/playManifest/entryId/{0}/format/applehttp/protocol/https/flavorParamId/0/manifest.m3u8'
@@ -198,7 +193,8 @@ class Indexer:
 
             show_id = client.parseDOM(i, 'a', ret='data-showid')[0]
             season_id = client.parseDOM(i, 'a', ret='data-seasonid')[0]
-            url = '?'.join([self.ajax_player, self.player_query.format(show_id=show_id, season_id=season_id)])
+            index_id = client.parseDOM(i, 'a', ret='data-index')[0]
+            url = '?'.join([self.ajax_player, self.player_query.format(show_id=show_id, item_index=index_id, season_id=season_id)])
             sep = client.parseDOM(i, 'a', ret='href')[0]
             group = client.replaceHTMLCodes(
                 client.stripTags(client.parseDOM(html.partition(sep.encode('utf-8'))[0], 'h3')[-1])
