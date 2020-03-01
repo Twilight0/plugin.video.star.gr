@@ -1,3 +1,7 @@
+[B]2.1.2[/B]
+- Point to a blank video if live stream is offline
+- Fix resolver for some older videos
+
 [B]2.1.1[/B]
 - Fixed player links on main indexers
 

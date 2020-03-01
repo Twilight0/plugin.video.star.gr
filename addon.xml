@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.star.gr" version="2.1.1" name="STAR Player" provider-name="Twilight0">
+<addon id="plugin.video.star.gr" version="2.1.2" name="STAR Player" provider-name="Twilight0">
 	<requires>
 		<import addon="xbmc.python" version="2.24.0" />
 		<import addon="script.module.tulip" version="2.4.2" />
@@ -20,7 +20,11 @@
 		<source>https://github.com/Twilight0/plugin.video.star.gr</source>
 		<website>http://www.star.gr/</website>
 		<size>228454</size>
-		<news>[B]2.1.1[/B]
+		<news>[B]2.1.2[/B]
+- Point to a blank video if live stream is offline
+- Fix resolver for some older videos
+
+[B]2.1.1[/B]
 - Fixed player links on main indexers
 
 [B]2.1.0[/B]

@@ -518,10 +518,13 @@ class Indexer:
 
     def play(self, url, query=None):
 
-        if url == self.live_link or url == 'wkFF9llFqRs':
+        if url == self.live_link:
+
             meta = {'title': 'Star TV'}
             icon = control.icon()
+
         else:
+
             meta = None
             icon = None
 
@@ -552,7 +555,20 @@ class Indexer:
 
             except AttributeError:
 
-                url = self.m3u8_link.format(re.search(r'kaltura-player(\w+)', html).group(1))
+                if 'kaltura-player' in html:
+
+                    url = self.m3u8_link.format(re.search(r'kaltura-player(\w+)', html).group(1))
+
+                elif 'iframe' in html and 'youtube' in html:
+
+                    url = client.parseDOM(html, 'iframe', ret='src')[0]
+                    stream = self.yt_session(url)
+                    directory.resolve(stream, dash=stream.endswith('.mpd'))
+                    return
+
+                else:
+
+                    url = 'https://static.adman.gr/inpage/blank.mp4'
 
         elif '/episode/' in url:
 
@@ -570,7 +586,7 @@ class Indexer:
 
         elif url == self.live_link and int(client.request(url, output='response', error=True)[0]) == 404:
 
-            return self.play('wkFF9llFqRs')
+            url = 'https://static.adman.gr/inpage/blank.mp4'
 
         try:
 
