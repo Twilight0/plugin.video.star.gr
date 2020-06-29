@@ -17,6 +17,7 @@
 
 import json, re
 
+from base64 import b64decode
 from youtube_resolver import resolve as yt_resolver
 from tulip import bookmarks, directory, client, cache, youtube, control
 from tulip.compat import urlparse, iteritems, OrderedDict
@@ -43,7 +44,7 @@ class Indexer:
         )
         self.m3u8_link = 'https://cdnapisec.kaltura.com/p/713821/sp/0/playManifest/entryId/{0}/format/applehttp/protocol/https/flavorParamId/0/manifest.m3u8'
         self.live_link = self.m3u8_link.format('1_fp7fyi3j')
-        self.youtube_key = 'AIzaSyBOS4uSyd27OU0XV2KSdN3vT2UG_v0g9sI'
+        self.youtube_key = b64decode('nZzbjNEWFNVLz5kakF3VUBDWrlkQ1lEVQJUYyp3VL9FR5NVY6lUQ'[::-1])
         self.youtube_link = 'UCwUNbp_4Y2Ry-asyerw2jew'
 
     def root(self):
@@ -191,17 +192,13 @@ class Indexer:
             except IndexError:
                 image = client.parseDOM(i, 'img', ret='data-src')[0]
 
-            show_id = client.parseDOM(i, 'a', ret='data-showid')[0]
-            season_id = client.parseDOM(i, 'a', ret='data-seasonid')[0]
-            index_id = client.parseDOM(i, 'a', ret='data-index')[0]
-            url = '?'.join([self.ajax_player, self.player_query.format(show_id=show_id, item_index=index_id, season_id=season_id)])
             sep = client.parseDOM(i, 'a', ret='href')[0]
             group = client.replaceHTMLCodes(
                 client.stripTags(client.parseDOM(html.partition(sep.encode('utf-8'))[0], 'h3')[-1])
             )
 
             self.data.append(group)
-            self.list.append({'title': title, 'image': image, 'url': url, 'group': group})
+            self.list.append({'title': title, 'image': image, 'url': sep, 'group': group})
 
         self.groups = list(OrderedDict.fromkeys(self.data))
 
@@ -209,9 +206,9 @@ class Indexer:
 
     def show(self, url):
 
-        self.list, self.groups = cache.get(self.listing, 1, url)
-
-        if self.list is None:
+        try:
+            self.list, self.groups = cache.get(self.listing, 1, url)
+        except TypeError:
             return
 
         try:
@@ -575,6 +572,12 @@ class Indexer:
             html = client.request(url)
 
             url = self.m3u8_link.format(re.search(r'kalturaPlayer\(["\'](\w+)["\']', html).group(1))
+
+        elif '/tv/' in url:
+
+            html = client.request(url)
+
+            url = re.search(r"(?P<url>http.+?\.m3u8)", html).group('url')
 
         elif '/viral/' in url or '/popular/' in url:
 
