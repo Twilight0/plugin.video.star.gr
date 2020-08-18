@@ -19,7 +19,9 @@ import json, re
 
 from base64 import b64decode
 from youtube_resolver import resolve as yt_resolver
-from tulip import bookmarks, directory, client, cache, youtube, control
+from tulip import bookmarks, directory, client, cache, youtube, control, workers
+from tulip.parsers import itertags_wrapper, parseDOM
+from tulip.cleantitle import replaceHTMLCodes
 from tulip.compat import urlparse, iteritems, OrderedDict
 
 
@@ -42,7 +44,10 @@ class Indexer:
                 'showid={show_id}', 'type=Episode', 'itemIndex={item_index}', 'seasonid={season_id}', 'single=false'
             ]
         )
-        self.m3u8_link = 'https://cdnapisec.kaltura.com/p/713821/sp/0/playManifest/entryId/{0}/format/applehttp/protocol/https/flavorParamId/0/manifest.m3u8'
+        self.m3u8_link = (
+            'https://cdnapisec.kaltura.com/p/713821/sp/0/playManifest/entryId/{0}/format/applehttp/protocol/https/'
+            'flavorParamId/0/manifest.m3u8'
+        )
         self.live_link = self.m3u8_link.format('1_fp7fyi3j')
         self.youtube_key = b64decode('nZzbjNEWFNVLz5kakF3VUBDWrlkQ1lEVQJUYyp3VL9FR5NVY6lUQ'[::-1])
         self.youtube_link = 'UCwUNbp_4Y2Ry-asyerw2jew'
@@ -151,21 +156,21 @@ class Indexer:
 
         html = client.request(self.startv_link)
 
-        divs = client.parseDOM(html, 'div', {'class': 'wrapper'})[3:6]
+        divs = parseDOM(html, 'div', {'class': 'wrapper'})[3:6]
 
         htmls = '\n'.join(divs)
 
-        items = client.parseDOM(htmls, 'div', attrs={'class': 'tileRow'})
+        items = parseDOM(htmls, 'div', attrs={'class': 'tile'})
 
         for item in items:
 
-            title = client.parseDOM(item, 'b')[0]
-            title = client.replaceHTMLCodes(title)
-            url = client.parseDOM(item, 'a', attrs={'class': 'tile_title'}, ret='href')[0]
+            title = parseDOM(item, 'b')[0]
+            title = replaceHTMLCodes(title)
+            url = parseDOM(item, 'a', attrs={'class': 'tile_title'}, ret='href')[0]
             try:
-                image = client.parseDOM(item, 'div', attrs={'data-tile-img': 'background-image:.+'}, ret='style')[0]
+                image = parseDOM(item, 'div', attrs={'data-tile-img': 'background-image:.+'}, ret='style')[0]
             except IndexError:
-                image = client.parseDOM(item, 'div', attrs={'data-tile-img': 'background-image:.+'}, ret='data-grid-img')[0]
+                image = parseDOM(item, 'div', attrs={'data-tile-img': 'background-image:.+'}, ret='data-grid-img')[0]
             image = re.search(r'(http.+?\.jpg)', image).group(1)
             group = urlparse(url).path.split('/')[2]
 
@@ -173,34 +178,48 @@ class Indexer:
 
         return self.list
 
+    def loop(self, i, group):
+
+        try:
+
+            title = parseDOM(i, 'a', ret='data-title')[0]
+            title = replaceHTMLCodes(title)
+
+        except Exception:
+            return
+
+        try:
+            image = parseDOM(i, 'img', ret='src')[0]
+        except IndexError:
+            image = parseDOM(i, 'img', ret='data-src')[0]
+
+        url = itertags_wrapper(i, 'a', ret='href')[0]
+
+        data = {'title': title, 'image': image, 'url': url, 'group': group}
+
+        return data
+
     def listing(self, url):
 
         html = client.request(url)
 
-        content = client.parseDOM(html, 'div', attrs={'class': 'seasons'})[0]
+        content = parseDOM(html, 'div', attrs={'class': 'seasons'})[0]
 
-        items = client.parseDOM(content, 'li', attrs={'class': 'horizontal-cell.+?'})
+        groups_content = parseDOM(content, 'div', {'class': 'row'})
 
-        for i in items:
+        for group_content in groups_content:
 
-            try:
-                title = client.replaceHTMLCodes(client.parseDOM(i, 'a', ret='data-title')[0])
-            except Exception:
-                break
-            try:
-                image = client.parseDOM(i, 'img', ret='src')[0]
-            except IndexError:
-                image = client.parseDOM(i, 'img', ret='data-src')[0]
+            group = replaceHTMLCodes(parseDOM(group_content, 'h3')[0].splitlines()[0])
+            items = parseDOM(group_content, 'li', attrs={'class': 'horizontal-cell.+?'})
 
-            sep = client.parseDOM(i, 'a', ret='href')[0]
-            group = client.replaceHTMLCodes(
-                client.stripTags(client.parseDOM(html.partition(sep.encode('utf-8'))[0], 'h3')[-1])
-            )
+            self.groups.append(group)
 
-            self.data.append(group)
-            self.list.append({'title': title, 'image': image, 'url': sep, 'group': group})
+            for i in items:
 
-        self.groups = list(OrderedDict.fromkeys(self.data))
+                item = self.loop(i, group)
+                if item is None:
+                    continue
+                self.list.append(item)
 
         return self.list, self.groups
 
@@ -273,12 +292,12 @@ class Indexer:
 
         html = client.request(self.star_video_link)
 
-        items = client.parseDOM(html, 'div', attrs={'class': 'video__title'})
+        items = parseDOM(html, 'div', attrs={'class': 'video__title'})
 
         for i in items:
 
-            title = client.parseDOM(i, 'a', attrs={'style': 'color.+?'})[0]
-            url = client.parseDOM(i, 'a', attrs={'style': 'color.+?'}, ret='href')[0]
+            title = parseDOM(i, 'a', attrs={'style': 'color.+?'})[0]
+            url = parseDOM(i, 'a', attrs={'style': 'color.+?'}, ret='href')[0]
 
             self.list.append({'title': title, 'url': url})
 
@@ -303,23 +322,23 @@ class Indexer:
 
         html = client.request(url)
 
-        content = client.parseDOM(html, 'div', attrs={'class': 'block block--no-space'})[0]
+        content = parseDOM(html, 'div', attrs={'class': 'block block--no-space'})[0]
 
-        items = client.parseDOM(content, 'div', attrs={'style': 'margin-bottom:20px;'})
+        items = parseDOM(content, 'div', attrs={'style': 'margin-bottom:20px;'})
 
         try:
-            next_url = client.parseDOM(html, 'a', {'rel': 'next'}, ret='href')[0]
+            next_url = parseDOM(html, 'a', {'rel': 'next'}, ret='href')[0]
         except Exception:
             next_url = ''
 
         for i in items:
 
-            title = client.parseDOM(i, 'div', attrs={'class': 'title'})[0].strip()
-            title = client.replaceHTMLCodes(title)
-            url = client.parseDOM(i, 'a', ret='href')[0]
+            title = parseDOM(i, 'div', attrs={'class': 'title'})[0].strip()
+            title = replaceHTMLCodes(title)
+            url = parseDOM(i, 'a', ret='href')[0]
             if not url.startswith('http'):
                 url = ''.join([self.stargr_link, url])
-            image = client.parseDOM(i, 'img', ret='src')[0]
+            image = parseDOM(i, 'img', attrs={'class': 'video-tumbnail'}, ret='src')[0]
 
             self.list.append({'title': title, 'image': image, 'url': url, 'next': next_url})
 
@@ -444,22 +463,22 @@ class Indexer:
 
         else:
 
-            items = client.parseDOM(html, 'div', attrs={'class': 'video-.+?'})
+            items = parseDOM(html, 'div', attrs={'class': 'video-.+?'})
 
             try:
-                next_url = client.parseDOM(html, 'a', attrs={'rel': 'next'}, ret='href')[0]
+                next_url = parseDOM(html, 'a', attrs={'rel': 'next'}, ret='href')[0]
             except Exception:
                 next_url = ''
 
             for i in items:
 
-                title = client.parseDOM(i, 'span', attrs={'class': 'name'})[0]
-                title = client.replaceHTMLCodes(title)
+                title = parseDOM(i, 'span', attrs={'class': 'name'})[0]
+                title = replaceHTMLCodes(title)
                 url = html.partition(i.encode('utf-8'))[0]
-                url = client.parseDOM(url, 'a', ret='href')[-1]
-                image = client.parseDOM(i, 'img', attrs={'class': 'lozad'}, ret='src')[0]
+                url = parseDOM(url, 'a', ret='href')[-1]
+                image = parseDOM(i, 'img', attrs={'class': 'lozad'}, ret='src')[0]
                 if image == 'https://www.starx.gr/images/1x1.png':
-                    image = client.parseDOM(i, 'img', attrs={'class': 'lozad'}, ret='data-src')[0]
+                    image = parseDOM(i, 'img', attrs={'class': 'lozad'}, ret='data-src')[0]
 
                 self.list.append({'title': title, 'url': url, 'image': image, 'next': next_url})
 
@@ -485,14 +504,14 @@ class Indexer:
 
         html = client.request(self.starx_shows_link)
 
-        items = client.parseDOM(html, 'div', attrs={'class': 'video-.+?'})
+        items = parseDOM(html, 'div', attrs={'class': 'video-.+?'})
 
         for i in items:
 
-            title = client.parseDOM(i, 'span', attrs={'class': 'name'})[0]
+            title = parseDOM(i, 'span', attrs={'class': 'name'})[0]
             url = html.partition(i.encode('utf-8'))[0]
-            url = client.parseDOM(url, 'a', ret='href')[-1]
-            image = client.parseDOM(i, 'img', ret='data-src')[0]
+            url = parseDOM(url, 'a', ret='href')[-1]
+            image = parseDOM(i, 'img', ret='data-src')[0]
 
             self.list.append({'title': title, 'url': url, 'image': image})
 
@@ -558,7 +577,7 @@ class Indexer:
 
                 elif 'iframe' in html and 'youtube' in html:
 
-                    url = client.parseDOM(html, 'iframe', ret='src')[0]
+                    url = parseDOM(html, 'iframe', ret='src')[0]
                     stream = self.yt_session(url)
                     directory.resolve(stream, dash=stream.endswith('.mpd'))
                     return
