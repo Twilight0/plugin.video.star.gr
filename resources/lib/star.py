@@ -19,7 +19,7 @@ import json, re
 
 from base64 import b64decode
 from youtube_resolver import resolve as yt_resolver
-from tulip import bookmarks, directory, client, cache, youtube, control, workers
+from tulip import bookmarks, directory, client, cache, youtube, control
 from tulip.parsers import itertags_wrapper, parseDOM
 from tulip.cleantitle import replaceHTMLCodes
 from tulip.compat import urlparse, iteritems, OrderedDict
@@ -192,6 +192,8 @@ class Indexer:
             image = parseDOM(i, 'img', ret='src')[0]
         except IndexError:
             image = parseDOM(i, 'img', ret='data-src')[0]
+
+        image = client.quote_paths(image)
 
         url = itertags_wrapper(i, 'a', ret='href')[0]
 
@@ -596,7 +598,13 @@ class Indexer:
 
             html = client.request(url)
 
-            url = re.search(r"(?P<url>http.+?\.m3u8)", html).group('url')
+            if 'onYouTubeIframeAPIReady' in html:
+                stream = re.search(r'''videoId: ["'](\w{11})["']''', html).group(1)
+                stream = self.yt_session(stream)
+                directory.resolve(stream, dash=stream.endswith('.mpd'))
+                return
+            else:
+                url = re.search(r"(?P<url>http.+?\.m3u8)", html).group('url')
 
         elif '/viral/' in url or '/popular/' in url:
 

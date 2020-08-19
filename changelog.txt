@@ -1,3 +1,7 @@
+[B]2.3.1[/B]
+- Fix for unicode characters in thumbnail paths
+- Fix into the resolver for some older videos
+
 [B]2.3.0[/B]
 - Minor fix for video thumbnails
 - Performance optimizations
