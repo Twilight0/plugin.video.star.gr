@@ -49,7 +49,7 @@ class Indexer:
             'flavorParamId/0/manifest.m3u8'
         )
         self.live_link = self.m3u8_link.format('1_fp7fyi3j')
-        self.youtube_key = b64decode('nZzbjNEWFNVLz5kakF3VUBDWrlkQ1lEVQJUYyp3VL9FR5NVY6lUQ'[::-1])
+        self.youtube_key = b64decode('zNHTHh1STN3SzVERB9kUmFWVmlkUFJ1UwYHZZJkUh5kQ5NVY6lUQ'[::-1])
         self.youtube_link = 'UCwUNbp_4Y2Ry-asyerw2jew'
 
     def root(self):
