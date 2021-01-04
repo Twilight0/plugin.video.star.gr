@@ -48,7 +48,7 @@ class Indexer:
             'https://cdnapisec.kaltura.com/p/713821/sp/0/playManifest/entryId/{0}/format/applehttp/protocol/https/'
             'flavorParamId/0/manifest.m3u8'
         )
-        self.live_link = self.m3u8_link.format('1_fp7fyi3j')
+        self.live_link = ''.join([self.startv_link, 'live-stream/'])
         self.youtube_key = b64decode('zNHTHh1STN3SzVERB9kUmFWVmlkUFJ1UwYHZZJkUh5kQ5NVY6lUQ'[::-1])
         self.youtube_link = 'UCwUNbp_4Y2Ry-asyerw2jew'
 
@@ -613,10 +613,6 @@ class Indexer:
             yt_id = re.search(r'onYouTubeIframeAPIReady\(["\']([\w-]{11})["\']\);', html).group(1)
 
             return self.play(yt_id)
-
-        elif url == self.live_link and int(client.request(url, output='response', error=True)[0]) == 404:
-
-            url = 'https://static.adman.gr/inpage/blank.mp4'
 
         try:
 

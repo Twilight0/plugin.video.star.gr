@@ -1,3 +1,10 @@
+[B]2.3.3[/B]
+- Resolve live tv web page instead or provide live url directly
+
+[B]2.3.2[/B]
+- Bumped dependencies
+- Updated youtube api key
+
 [B]2.3.1[/B]
 - Fix for unicode characters in thumbnail paths
 - Fix into the resolver for some older videos
