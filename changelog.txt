@@ -1,3 +1,6 @@
+[B]2.3.4[/B]
+- Some bug fixes
+
 [B]2.3.3[/B]
 - Resolve live tv web page instead or provide live url directly
 

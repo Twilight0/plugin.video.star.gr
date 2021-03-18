@@ -476,7 +476,10 @@ class Indexer:
 
                 title = parseDOM(i, 'span', attrs={'class': 'name'})[0]
                 title = replaceHTMLCodes(title)
-                url = html.partition(i.encode('utf-8'))[0]
+                try:
+                    url = html.partition(i.encode('utf-8'))[0]
+                except TypeError:
+                    url = html.partition(i)[0]
                 url = parseDOM(url, 'a', ret='href')[-1]
                 image = parseDOM(i, 'img', attrs={'class': 'lozad'}, ret='src')[0]
                 if image == 'https://www.starx.gr/images/1x1.png':
