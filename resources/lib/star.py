@@ -24,6 +24,7 @@ from tulip.parsers import itertags_wrapper, parseDOM
 from tulip.cleantitle import replaceHTMLCodes
 from tulip.compat import urlparse, iteritems, OrderedDict
 
+cache_method = cache.FunctionCache().cache_method
 
 class Indexer:
 
@@ -56,7 +57,8 @@ class Indexer:
 
         self.list = [
             {
-                'title': control.lang(32009),
+                'label': control.lang(32009),
+                'title': 'Star TV Live',
                 'action': 'play',
                 'isFolder': 'False',
                 'url': self.live_link,
@@ -124,9 +126,19 @@ class Indexer:
 
         directory.add(self.list)
 
+    @cache_method(1440)
+    def yt_playlists(self):
+
+        return youtube.youtube(key=self.youtube_key).playlists(self.youtube_link)
+
+    @cache_method(60)
+    def yt_playlist(self, url):
+
+        return youtube.youtube(key=self.youtube_key).playlist(url)
+
     def archive(self):
 
-        self.list = cache.get(youtube.youtube(key=self.youtube_key).playlists, 24, self.youtube_link)
+        self.list = self.yt_playlists()
 
         if self.list is None:
             return
@@ -143,7 +155,7 @@ class Indexer:
 
     def youtube(self, url):
     
-        self.list = cache.get(youtube.youtube(key=self.youtube_key).playlist, 1, url)
+        self.list = self.yt_playlist(url)
 
         if self.list is None:
             return
@@ -152,6 +164,7 @@ class Indexer:
 
         directory.add(self.list)
 
+    @cache_method(720)
     def index(self):
 
         html = client.request(self.startv_link)
@@ -201,6 +214,7 @@ class Indexer:
 
         return data
 
+    @cache_method(60)
     def listing(self, url):
 
         html = client.request(url)
@@ -228,7 +242,7 @@ class Indexer:
     def show(self, url):
 
         try:
-            self.list, self.groups = cache.get(self.listing, 1, url)
+            self.list, self.groups = self.listing(url)
         except TypeError:
             return
 
@@ -263,7 +277,7 @@ class Indexer:
 
     def startv(self):
 
-        self.list = cache.get(self.index, 12)
+        self.list = self.index()
 
         if self.list is None:
             return
@@ -290,6 +304,7 @@ class Indexer:
 
         directory.add(self.list)
 
+    @cache_method(720)
     def _videos(self):
 
         html = client.request(self.star_video_link)
@@ -307,7 +322,7 @@ class Indexer:
 
     def videos(self):
 
-        self.list = cache.get(self._videos, 12)
+        self.list = self._videos()
 
         if self.list is None:
             return
@@ -320,6 +335,7 @@ class Indexer:
 
         directory.add(self.list)
 
+    @cache_method(60)
     def _category(self, url):
 
         html = client.request(url)
@@ -348,7 +364,7 @@ class Indexer:
 
     def category(self, url):
 
-        self.list = cache.get(self._category, 1, url)
+        self.list = self._category(url)
 
         if self.list is None:
             return
@@ -432,6 +448,7 @@ class Indexer:
 
         directory.add(self.list)
 
+    @cache_method(60)
     def _starx_videos(self, url, title):
 
         try:
@@ -491,7 +508,7 @@ class Indexer:
 
     def starx_videos(self, url, title):
 
-        self.list = cache.get(self._starx_videos, 1, url, title)
+        self.list = self._starx_videos(url, title)
 
         if self.list is None:
             return
@@ -505,6 +522,7 @@ class Indexer:
 
         directory.add(self.list)
 
+    @cache_method(720)
     def _starx_shows(self):
 
         html = client.request(self.starx_shows_link)
@@ -524,7 +542,7 @@ class Indexer:
 
     def starx_shows(self):
 
-        self.list = cache.get(self._starx_shows, 12)
+        self.list = self._starx_shows()
 
         if self.list is None:
             return
@@ -541,8 +559,8 @@ class Indexer:
 
         if url == self.live_link:
 
-            meta = {'title': 'Star TV'}
-            icon = control.icon()
+            icon = {'poster': control.icon()}
+            meta = {'plot': self.live_resolver()[1]}
 
         else:
 
@@ -607,7 +625,7 @@ class Indexer:
                 directory.resolve(stream, dash=stream.endswith('.mpd'))
                 return
             else:
-                url = re.search(r"(?P<url>http.+?\.m3u8)", html).group('url')
+                url = self.live_resolver()[0]
 
         elif '/viral/' in url or '/popular/' in url:
 
@@ -638,6 +656,17 @@ class Indexer:
         else:
 
             directory.resolve(url, meta=meta, icon=icon)
+
+    @cache_method(15)
+    def live_resolver(self):
+
+        html = client.request(self.live_link)
+
+        plot = client.parseDOM(html, 'div', {'class': 'desc'})[0].strip()
+
+        url = re.search(r"(?P<url>http.+?\.m3u8)", html).group('url')
+
+        return url, plot
 
     @staticmethod
     def thumb_maker(video_id):

@@ -1,3 +1,7 @@
+[B]2.4.0[/B]
+- Change caching method
+- Obtain plot for live tv
+
 [B]2.3.4[/B]
 - Some bug fixes
 
