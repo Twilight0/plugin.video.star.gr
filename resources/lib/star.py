@@ -560,7 +560,7 @@ class Indexer:
         if url == self.live_link:
 
             icon = {'poster': control.icon()}
-            meta = {'plot': self.live_resolver()[1]}
+            meta = {'plot': self.video_resolver(url)[1]}
 
         else:
 
@@ -625,7 +625,10 @@ class Indexer:
                 directory.resolve(stream, dash=stream.endswith('.mpd'))
                 return
             else:
-                url = self.live_resolver()[0]
+                if url == self.live_link:
+                    url = self.video_resolver(url)[0]
+                else:
+                    url = self.video_resolver(url)
 
         elif '/viral/' in url or '/popular/' in url:
 
@@ -658,15 +661,21 @@ class Indexer:
             directory.resolve(url, meta=meta, icon=icon)
 
     @cache_method(15)
-    def live_resolver(self):
+    def video_resolver(self, url):
 
-        html = client.request(self.live_link)
-
-        plot = client.parseDOM(html, 'div', {'class': 'desc'})[0].strip()
+        html = client.request(url)
 
         url = re.search(r"(?P<url>http.+?\.m3u8)", html).group('url')
 
-        return url, plot
+        if url == self.live_link:
+
+            plot = client.parseDOM(html, 'div', {'class': 'desc'})[0].strip()
+
+            return url, plot
+
+        else:
+
+            return url
 
     @staticmethod
     def thumb_maker(video_id):
