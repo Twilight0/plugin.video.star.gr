@@ -26,12 +26,13 @@ from tulip.compat import urlparse, iteritems, OrderedDict
 
 cache_method = cache.FunctionCache().cache_method
 
+
 class Indexer:
 
     def __init__(self):
 
         self.list = []; self.data = []; self.groups = []
-        self.stargr_link = 'http://www.star.gr'
+        self.stargr_link = 'https://www.star.gr'
         self.starx_link = 'https://www.starx.gr'
         self.startv_link = ''.join([self.stargr_link, '/tv/'])
         self.star_video_link = ''.join([self.stargr_link, '/video'])
@@ -57,7 +58,7 @@ class Indexer:
 
         self.list = [
             {
-                'label': control.lang(32009),
+                'label': control.lang(30009),
                 'title': 'Star TV Live',
                 'action': 'play',
                 'isFolder': 'False',
@@ -66,37 +67,37 @@ class Indexer:
             }
             ,
             {
-                'title': control.lang(32003),
+                'title': control.lang(30003),
                 'action': 'startv',
                 'icon': 'tvshows.png'
             }
             ,
             {
-                'title': control.lang(32007),
+                'title': control.lang(30007),
                 'action': 'videos',
                 'icon': 'videos.png'
             }
             ,
             {
-                'title': control.lang(32008),
+                'title': control.lang(30008),
                 'action': 'starx',
                 'icon': 'starx.png'
             }
             ,
             {
-                'title': control.lang(32010),
+                'title': control.lang(30010),
                 'action': 'news',
                 'icon': 'news.png'
             }
             ,
             {
-                'title': control.lang(32002),
+                'title': control.lang(30002),
                 'action': 'archive',
                 'icon': 'archive.png'
             }
             ,
             {
-                'title': control.lang(32006),
+                'title': control.lang(30006),
                 'action': 'bookmarks',
                 'icon': 'bookmarks.png'
             }
@@ -120,7 +121,7 @@ class Indexer:
         for i in self.list:
             bookmark = dict((k, v) for k, v in iteritems(i) if not k == 'next')
             bookmark['delbookmark'] = i['url']
-            i.update({'cm': [{'title': 32502, 'query': {'action': 'deleteBookmark', 'url': json.dumps(bookmark)}}]})
+            i.update({'cm': [{'title': 30502, 'query': {'action': 'deleteBookmark', 'url': json.dumps(bookmark)}}]})
 
         self.list = sorted(self.list, key=lambda k: k['title'].lower())
 
@@ -147,7 +148,7 @@ class Indexer:
             i.update({'action': 'youtube'})
             bookmark = dict((k, v) for k, v in iteritems(i) if not k == 'next')
             bookmark['bookmark'] = i['url']
-            i.update({'cm': [{'title': 32501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
+            i.update({'cm': [{'title': 30501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
 
         control.sortmethods('title')
 
@@ -160,7 +161,8 @@ class Indexer:
         if self.list is None:
             return
 
-        for i in self.list: i.update({'action': 'play', 'isFolder': 'False'})
+        for i in self.list:
+            i.update({'action': 'play', 'isFolder': 'False'})
 
         directory.add(self.list)
 
@@ -255,10 +257,10 @@ class Indexer:
             i.update({'action': 'play', 'isFolder': 'False'})
 
         try:
-            title = u''.join([control.lang(32005), u': {0}'.format(self.groups[int(control.setting('group'))])])
+            title = u''.join([control.lang(30005), u': {0}'.format(self.groups[int(control.setting('group'))])])
         except IndexError:
             try:
-                title = u''.join([control.lang(32005), u': {0}'.format(self.groups[0])])
+                title = u''.join([control.lang(30005), u': {0}'.format(self.groups[0])])
             except Exception:
                 return
 
@@ -286,12 +288,12 @@ class Indexer:
             i.update({'action': 'show'})
             bookmark = dict((k, v) for k, v in iteritems(i) if not k == 'next')
             bookmark['bookmark'] = i['url']
-            i.update({'cm': [{'title': 32501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
+            i.update({'cm': [{'title': 30501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
 
         option = control.setting('option')
 
         selector = {
-            'title': u''.join([control.lang(32005), u': {0}'.format(control.lang(self.vod_groups()[option]))]),
+            'title': u''.join([control.lang(30005), u': {0}'.format(control.lang(self.vod_groups()[option]))]),
             'action': 'selector',
             'icon': 'selector.png',
             'isFolder': 'False',
@@ -331,7 +333,7 @@ class Indexer:
             i.update({'action': 'category'})
             bookmark = dict((k, v) for k, v in iteritems(i) if not k == 'next')
             bookmark['bookmark'] = i['url']
-            i.update({'cm': [{'title': 32501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
+            i.update({'cm': [{'title': 30501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
 
         directory.add(self.list)
 
@@ -370,7 +372,7 @@ class Indexer:
             return
 
         for i in self.list:
-            i.update({'action': 'play', 'isFolder': 'False', 'nextlabel': 32500, 'nextaction': 'category'})
+            i.update({'action': 'play', 'isFolder': 'False', 'nextlabel': 30500, 'nextaction': 'category'})
 
         directory.add(self.list)
 
@@ -378,28 +380,28 @@ class Indexer:
 
         self.list = [
             {
-                'title': u''.join([control.lang(32008), ': ', control.lang(32004)]),
+                'title': u''.join([control.lang(30008), ': ', control.lang(30004)]),
                 'url': self.starx_latest_link,
                 'icon': 'starx.png',
                 'action': 'starx_videos'
             }
             ,
             {
-                'title': u''.join([control.lang(32008), ': ', control.lang(32013)]),
+                'title': u''.join([control.lang(30008), ': ', control.lang(30013)]),
                 'url': self.starx_viral_link,
                 'icon': 'starx.png',
                 'action': 'starx_videos'
             }
             ,
             {
-                'title': u''.join([control.lang(32008), ': ', control.lang(32014)]),
+                'title': u''.join([control.lang(30008), ': ', control.lang(30014)]),
                 'url': self.starx_popular_link,
                 'icon': 'starx.png',
                 'action': 'starx_videos'
             }
             ,
             {
-                'title': u''.join([control.lang(32008), ': ', control.lang(32012)]),
+                'title': u''.join([control.lang(30008), ': ', control.lang(30012)]),
                 'icon': 'starx.png',
                 'action': 'starx_shows'
             }
@@ -411,35 +413,35 @@ class Indexer:
 
         self.list = [
             {
-                'title': 32018,
+                'title': 30018,
                 'action': 'show',
                 'icon': 'news.png',
                 'url': 'https://www.star.gr/tv/enimerosi/mesimeriano-deltio-eidiseon/'
             }
             ,
             {
-                'title': 32019,
+                'title': 30019,
                 'action': 'show',
                 'icon': 'news.png',
                 'url': 'https://www.star.gr/tv/enimerosi/kedriko-deltio-eidiseon/'
             }
             ,
             {
-                'title': 32022,
+                'title': 30022,
                 'action': 'show',
                 'icon': 'news.png',
                 'url': 'https://www.star.gr/tv/enimerosi/kentriko-deltio-eidiseon-sabbatokuriakou/'
             }
             ,
             {
-                'title': 32020,
+                'title': 30020,
                 'action': 'show',
                 'icon': 'sign.png',
                 'url': 'https://www.star.gr/tv/enimerosi/apogeumatino-deltio-eidiseon/'
             }
             ,
             {
-                'title': 32021,
+                'title': 30021,
                 'action': 'show',
                 'icon': 'weather.png',
                 'url': 'https://www.star.gr/tv/enimerosi/star-kairos/'
@@ -467,9 +469,9 @@ class Indexer:
             for i, e in zip(items, episodes):
 
                 try:
-                    label = u''.join([title, ' - ', control.lang(32016), str(e), '[CR][I]', i['title'], '[/I]'])
+                    label = u''.join([title, ' - ', control.lang(30016), str(e), '[CR][I]', i['title'], '[/I]'])
                 except Exception:
-                    label = u''.join([title, ' - ', control.lang(32016), str(e)])
+                    label = u''.join([title, ' - ', control.lang(30016), str(e)])
                 image = self.thumb_maker(i['video_id'])
                 url = i['video_id']
 
@@ -518,7 +520,7 @@ class Indexer:
             i.update({'action': 'play', 'isFolder': 'False'})
 
             if 'next' in i:
-                i.update({'nextlabel': 32500, 'nextaction': 'starx_videos'})
+                i.update({'nextlabel': 30500, 'nextaction': 'starx_videos'})
 
         directory.add(self.list)
 
@@ -551,7 +553,7 @@ class Indexer:
             i.update({'action': 'starx_videos'})
             bookmark = dict((k, v) for k, v in iteritems(i) if not k == 'next')
             bookmark['bookmark'] = i['url']
-            i.update({'cm': [{'title': 32501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
+            i.update({'cm': [{'title': 30501, 'query': {'action': 'addBookmark', 'url': json.dumps(bookmark)}}]})
 
         directory.add(self.list)
 
@@ -560,7 +562,7 @@ class Indexer:
         if url == self.live_link:
 
             icon = {'poster': control.icon()}
-            meta = {'plot': self.video_resolver(url)[1]}
+            meta = {'plot': ' '.join([control.lang(30023), self.video_resolver(url)[1]])}
 
         else:
 
@@ -665,17 +667,18 @@ class Indexer:
 
         html = client.request(url)
 
-        url = re.search(r"(?P<url>http.+?\.m3u8)", html).group('url')
+        stream = re.search(r"(?P<url>http.+?\.m3u8)", html).group('url')
 
         if url == self.live_link:
 
-            plot = client.parseDOM(html, 'div', {'class': 'desc'})[0].strip()
+            desc = client.parseDOM(html, 'div', {'class': 'desc'})[0]
+            plot = client.parseDOM(desc, 'h3')[0]
 
-            return url, plot
+            return stream, plot
 
         else:
 
-            return url
+            return stream
 
     @staticmethod
     def thumb_maker(video_id):
@@ -704,7 +707,7 @@ class Indexer:
 
         return OrderedDict(
             [
-                ('enimerosi', 32010), ('psychagogia', 32011), ('seires', 32012)
+                ('enimerosi', 30010), ('psychagogia', 30011), ('seires', 30012)
             ]
         )
 
@@ -714,7 +717,7 @@ class Indexer:
 
             query = json.loads(query)
 
-            choice = control.selectDialog(query, control.lang(32017))
+            choice = control.selectDialog(query, control.lang(30017))
 
             if choice != -1:
                 control.setSetting('group', str(choice))
@@ -725,7 +728,7 @@ class Indexer:
 
             groups = list(self.vod_groups().keys())
 
-            choice = control.selectDialog(choices, control.lang(32003))
+            choice = control.selectDialog(choices, control.lang(30003))
 
             option = groups[choice]
 

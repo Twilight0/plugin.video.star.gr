@@ -2,11 +2,102 @@
 # Addon Name: STAR Player
 # Addon id: plugin.video.star.gr
 # Addon version: 1.0.0
-# Addon Provider: lambda
+# Addon Provider: lambda, twilight0
 
 msgid ""
 msgstr ""
 
+msgctxt "#30001"
+msgid "Actions"
+msgstr "Ενέργειες"
+
+msgctxt "#30002"
+msgid "Archive"
+msgstr "Αρχείο"
+
+msgctxt "#30003"
+msgid "Watch at Star"
+msgstr "Δείτε στο Star"
+
+msgctxt "#30004"
+msgid "Latest"
+msgstr "Πρόσφατα"
+
+msgctxt "#30005"
+msgid "Option"
+msgstr "Επιλογή"
+
+msgctxt "#30006"
+msgid "Bookmarks"
+msgstr "Σελιδοδείκτες"
+
+msgctxt "#30007"
+msgid "Videos"
+msgstr "Βίντεο"
+
+msgctxt "#30008"
+msgid "StarX"
+msgstr "StarX"
+
+msgctxt "#30009"
+msgid "Live"
+msgstr "Ζωντανά"
+
+msgctxt "#30010"
+msgid "News"
+msgstr "Ειδήσεις"
+
+msgctxt "#30011"
+msgid "Entertainment"
+msgstr "Ψυχαγωγία"
+
+msgctxt "#30012"
+msgid "Shows"
+msgstr "Σειρές"
+
+msgctxt "#30013"
+msgid "Viral"
+msgstr "Viral"
+
+msgctxt "#30014"
+msgid "Popular"
+msgstr "Δημοφιλή"
+
+msgctxt "#30015"
+msgid "Shows"
+msgstr "Εκπομπές"
+
+msgctxt "#30016"
+msgid "Episode "
+msgstr "Επεισόδιο "
+
+msgctxt "#30017"
+msgid "Select an option"
+msgstr "Κάντε μία επιλογή"
+
+msgctxt "#30018"
+msgid "News at noon"
+msgstr "Μεσημεριανό δελτίο"
+
+msgctxt "#30019"
+msgid "Evening news"
+msgstr "Βραδινό δελτίο"
+
+msgctxt "#30020"
+msgid "Sign language news"
+msgstr "Δελτίο στη νοηματική"
+
+msgctxt "#30021"
+msgid "Weather"
+msgstr "Καιρός"
+
+msgctxt "#30022"
+msgid "Weekend news"
+msgstr "Νέα του Σαββατοκύριακου"
+
+msgctxt "#30023"
+msgid "Playing now:"
+msgstr "Παίζει τώρα:"
 
 msgctxt "#30402"
 msgid "Success"
@@ -16,103 +107,15 @@ msgctxt "#30403"
 msgid "Clear Function cache"
 msgstr "Καθαρισμός προσωρινής μνήμης"
 
-msgctxt "#32001"
-msgid "Actions"
-msgstr "Ενέργειες"
-
-msgctxt "#32002"
-msgid "Archive"
-msgstr "Αρχείο"
-
-msgctxt "#32003"
-msgid "Watch at Star"
-msgstr "Δείτε στο Star"
-
-msgctxt "#32004"
-msgid "Latest"
-msgstr "Πρόσφατα"
-
-msgctxt "#32005"
-msgid "Option"
-msgstr "Επιλογή"
-
-msgctxt "#32006"
-msgid "Bookmarks"
-msgstr "Σελιδοδείκτες"
-
-msgctxt "#32007"
-msgid "Videos"
-msgstr "Βίντεο"
-
-msgctxt "#32008"
-msgid "StarX"
-msgstr "StarX"
-
-msgctxt "#32009"
-msgid "Live"
-msgstr "Ζωντανά"
-
-msgctxt "#32010"
-msgid "News"
-msgstr "Ειδήσεις"
-
-msgctxt "#32011"
-msgid "Entertainment"
-msgstr "Ψυχαγωγία"
-
-msgctxt "#32012"
-msgid "Shows"
-msgstr "Σειρές"
-
-msgctxt "#32013"
-msgid "Viral"
-msgstr "Viral"
-
-msgctxt "#32014"
-msgid "Popular"
-msgstr "Δημοφιλή"
-
-msgctxt "#32015"
-msgid "Shows"
-msgstr "Εκπομπές"
-
-msgctxt "#32016"
-msgid "Episode "
-msgstr "Επεισόδιο "
-
-msgctxt "#32017"
-msgid "Select an option"
-msgstr "Κάντε μία επιλογή"
-
-msgctxt "#32018"
-msgid "News at noon"
-msgstr "Μεσημεριανό δελτίο"
-
-msgctxt "#32019"
-msgid "Evening news"
-msgstr "Βραδινό δελτίο"
-
-msgctxt "#32020"
-msgid "Sign language news"
-msgstr "Δελτίο στη νοηματική"
-
-msgctxt "#32021"
-msgid "Weather"
-msgstr "Καιρός"
-
-msgctxt "#32022"
-msgid "Weekend news"
-msgstr "Νέα του Σαββατοκύριακου"
-
-msgctxt "#32500"
+msgctxt "#30500"
 msgid "Next..."
 msgstr "Επόμενα..."
 
-msgctxt "#32501"
+msgctxt "#30501"
 msgid "Add to bookmarks"
 msgstr "Προσθήκη στους σελιδοδείκτες"
 
-msgctxt "#32502"
+msgctxt "#30502"
 msgid "Remove from bookmarks"
 msgstr "Αφαίρεση από σελιδοδείκτες"
 
